@@ -1,0 +1,14 @@
+services:
+  kobo_dash:
+    build: .
+    ports:
+      - "6123:6123"
+    restart: 'unless-stopped'
+    container_name: kobo_dash
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./Html:/app/Html
+      - ./HomeAssistant:/app/HomeAssistant
+      - ./static:/app/static
+      - ./utils:/app/utils

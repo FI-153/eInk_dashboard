@@ -1,0 +1,121 @@
+html {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+  max-width: 600px;
+  max-height: 800px;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 0px;
+  padding: 0px;
+}
+
+#dash_title {
+  text-align: center;
+}
+
+#weather_cell {
+  text-align: left;
+}
+
+#city_icon {
+  height: 20px;
+  vertical-align: middle;
+}
+
+#city_name {
+  margin-block: 10px;
+  padding-top: 10px;
+}
+
+#temperature {
+  font-size: 65px;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  font-weight: bold;
+}
+
+#weather_icon {
+  height: 60px;
+}
+
+#date_field {
+  margin-top: 10px;
+}
+
+#day_month {
+  font-size: 40px;
+}
+
+#date_number {
+  font-size: 120px;
+  margin-top: -20px;
+  font-weight: bold;
+}
+
+#net_icon {
+  height: 30px;
+  vertical-align: middle;
+  padding-right: 5px;
+}
+
+#net_stats {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+
+#net_stats_elem {
+  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  margin: 0px;
+}
+
+#public_ip {
+  font-weight: 600;
+}
+
+#public_ip_addr {
+  padding-bottom: 10px;
+}
+
+#h1_time {
+  text-align: center;
+}
+
+table {
+  border-width: 1px;
+  border-collapse: collapse;
+  border-style: solid;
+}
+
+td {
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#big_table_cell {
+  width: 50%;
+  padding-top: 0px;
+}
+
+p {
+  margin-block: 0px;
+  margin: 5px;
+  padding: 0px;
+  font-size: 25px;
+  font-weight: bold;
+}

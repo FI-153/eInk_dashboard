@@ -1,0 +1,39 @@
+import os
+
+"""
+Constants:
+  HASS_IP (str): The IP address of the Home Assistant instance.
+  HASS_PORT (str): The port number of the Home Assistant instance.
+  HASS_TOKEN (str): The authentication token for accessing the Home Assistant API.
+  PAGE_REFRESH_INTERVAL_SECONDS (int): The interval in seconds for refreshing the page.
+  CSS_STYLESHEET_PATH (str): The file path to the CSS stylesheet.
+  WEATHER_SENSOR_ID (str): The sensor ID for weather forecast.
+  WEATHER_CITY_NAME (str): The city name for weather forecast.
+  ETA_TO_WORK_SENSOR_ID (str): The sensor ID for estimated time of arrival to work.
+  PUBLIC_IP_SENSOR_ID (str): The sensor ID for the public IP address.
+  DOWNLOAD_SPD_SENSOR_ID (str): The sensor ID for maximum download speed in MB/s.
+  UPLOAD_SPD_SENSOR_ID (str): The sensor ID for maximum upload speed in MB/s.
+  LAN_DOWNLOAD_SPD_SENSOR_ID (str): The sensor ID for maximum LAN download speed in MB/s.
+  LAN_UPLOAD_SPD_SENSOR_ID (str): The sensor ID for maximum LAN upload speed in MB/s. 
+"""
+# Note: Ensure to keep the HASS_TOKEN secure and do not expose it in public repositories.
+
+HASS_IP=""
+HASS_PORT=""
+HASS_TOKEN=""
+
+PAGE_REFRESH_INTERVAL_SECONDS = 60
+
+CSS_STYLESHEET_PATH = "./static/css/styles.css"
+
+WEATHER_SENSOR_ID = ""
+WEATHER_CITY_NAME = ""
+ETA_TO_WORK_SENSOR_ID = ""
+PUBLIC_IP_SENSOR_ID = ""
+DOWNLOAD_SPD_SENSOR_ID = ""
+UPLOAD_SPD_SENSOR_ID = ""
+LAN_DOWNLOAD_SPD_SENSOR_ID = ""
+LAN_UPLOAD_SPD_SENSOR_ID = ""
+PERSON_1_TRACKER_SENSOR_ID = ""
+PERSON_2_TRACKER_SENSOR_ID = ""
+PERSON_3_TRACKER_SENSOR_ID = ""
