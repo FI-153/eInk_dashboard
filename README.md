@@ -10,7 +10,7 @@ and Docker Compose
 
 `sudo docker compose up -d`
 
-### Before Lunching
+### Before Launching
 Rename the file `utils/constants.py.customize` to `utils/constants.py` and populate it with your instance's IP, port, token and the name of the sensors you want to use. For the weather i used [Met.no](https://www.home-assistant.io/integrations/met) and [Waze](https://www.home-assistant.io/integrations/waze_travel_time) for the ETA to work. The other sensors are custom templates based on my setup which you can tailor to your own by reading the code.
 
 ### Requisites
