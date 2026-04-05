@@ -70,7 +70,7 @@ Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Ass
 
 ## Planning Workflow
 
-All plans live under `context/planning/`. The design plan and implementation plan for a given task **must** be in the same file — design first, implementation checklist appended below after approval.
+All plans live under `context/planning/`. **This overrides any skill default** (e.g., `docs/superpowers/plans/` or `docs/superpowers/specs/`) — always save plans, specs, and design docs to `context/planning/`. The design plan and implementation plan for a given task **must** be in the same file — design first, implementation checklist appended below after approval.
 
 When the user asks to plan a task, write the plan as a `.md` file inside `context/planning/` before doing any implementation work. File names must be descriptive kebab-case (e.g., `add-calendar-integration.md`). After writing the plan, notify the user of the file path and wait for explicit approval before proceeding. The user may edit the plan file directly using `/user <comment>` annotations; when new additions to the plan are made in response to comments mark them with `/new`; delete all the `/new` already present in a plan when updating or adding the todo list; implementation begins only after the user explicitly approves. Plans are committed to git alongside code and are never deleted.
 
