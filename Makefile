@@ -1,6 +1,21 @@
 PYTHON ?= python3
 
-.PHONY: run test lint format docker-build docker-up docker-down setup
+.PHONY: help run test lint format docker-build docker-up docker-down setup
+
+.DEFAULT_GOAL := help
+
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "Targets:"
+	@echo "  run            Flask debug server on 0.0.0.0:6123"
+	@echo "  test           Run full test suite"
+	@echo "  lint           Check linting + formatting"
+	@echo "  format         Auto-fix lint issues and format"
+	@echo "  setup          Create venv and install all dependencies (including dev)"
+	@echo "  docker-build   Build Docker image"
+	@echo "  docker-up      Build and run with Docker Compose"
+	@echo "  docker-down    Stop Docker containers"
 
 run:
 	$(PYTHON) app.py
@@ -26,4 +41,5 @@ docker-down:
 	sudo docker compose down
 
 setup:
-	pip3 install -r requirements-dev.txt
+	$(PYTHON) -m venv .venv
+	. .venv/bin/activate && pip install -r requirements-dev.txt

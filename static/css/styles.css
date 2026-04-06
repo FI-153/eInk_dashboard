@@ -6,12 +6,14 @@ html {
   transform: rotate(180deg);
   max-width: 600px;
   max-height: 800px;
+  height: 100%;
 }
 
 body {
   font-family: sans-serif;
   margin: 0px;
   padding: 0px;
+  height: 100%;
 }
 
 #dash_title {
@@ -118,4 +120,25 @@ p {
   padding: 0px;
   font-size: 25px;
   font-weight: bold;
+}
+
+#offline_wrapper {
+  width: 100%;
+  height: 100%;
+  display: table;
+}
+
+#offline_message {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+#offline_message h1 {
+  font-size: 40px;
+}
+
+#offline_message p {
+  font-size: 30px;
 }
