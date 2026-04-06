@@ -10,6 +10,7 @@ help:
 	@echo "Targets:"
 	@echo "  run            Flask debug server on 0.0.0.0:6123"
 	@echo "  test           Run full test suite"
+	@echo "  quality        Linting + formatting + auto-fix"
 	@echo "  lint           Check linting + formatting"
 	@echo "  format         Auto-fix lint issues and format"
 	@echo "  setup          Create venv and install all dependencies (including dev)"
@@ -22,6 +23,10 @@ run:
 
 test:
 	$(PYTHON) -m pytest tests/ -v
+
+quality:
+	make lint
+	make format
 
 lint:
 	ruff check .
