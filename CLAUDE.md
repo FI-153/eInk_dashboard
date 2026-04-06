@@ -57,6 +57,8 @@ Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Ass
 
 ### Design Constraints
 
+This project targets very old e-readers and legacy devices that do not support modern HTML or CSS. Every line of generated HTML and CSS must be kept as simple and backward-compatible as possible — avoid modern CSS features (flexbox, grid, CSS variables, `calc()`, etc.), HTML5 semantic elements, and anything that requires recent browser engine support.
+
 - Table-based HTML layout for compatibility with older e-reader browsers
 - No JavaScript — auto-refresh via `<meta http-equiv="refresh">`
 - All styling is black-on-white for e-ink contrast
@@ -81,6 +83,10 @@ Once a plan is approved and the user asks for implementation steps, create an im
 When implementing new methods always add docstrings in accordance with the directives in `context/styling/formatting.md`.
 
 **Asking Questions**: ALWAYS ask any clarifying questions you need and avoid assumptions unless asked otherwise.
+
+## Prefer Make Commands
+
+Always use `make` targets (e.g., `make test`, `make lint`, `make format`) instead of running the underlying commands directly when a matching Make target exists. Check the Makefile before running raw commands.
 
 ## Test-Driven Development
 

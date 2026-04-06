@@ -170,3 +170,50 @@ class TestPeopleAtHome:
     def test_person_error(self):
         self.mock_comms.getRequest.return_value = ERR_RESPONSE
         assert self.templates.is_person_home("person.test") is False
+
+
+class TestOfflinePage:
+    def setup_method(self):
+        self.templates = _make_templates()
+
+    def test_offline_page_contains_offline_message(self):
+        result = self.templates.offline_page()
+        assert "Home Assistant is Offline" in result
+
+    @patch("Html.htmlTemplates.datetime")
+    def test_offline_page_contains_current_time(self, mock_datetime):
+        mock_now = MagicMock()
+        mock_now.strftime.return_value = "14:30"
+        mock_datetime.datetime.now.return_value = mock_now
+        result = self.templates.offline_page()
+        assert "14:30" in result
+
+    def test_offline_page_contains_meta_refresh(self):
+        result = self.templates.offline_page()
+        assert "http-equiv='refresh'" in result
+
+    def test_offline_page_contains_stylesheet(self):
+        result = self.templates.offline_page()
+        assert "stylesheet" in result
+
+    def test_offline_page_has_offline_message_id(self):
+        result = self.templates.offline_page()
+        assert "offline_message" in result
+
+
+class TestHomeBranching:
+    def setup_method(self):
+        self.templates = _make_templates()
+        self.mock_comms = self.templates._hassComms
+
+    def test_home_returns_offline_page_when_unreachable(self):
+        self.mock_comms.isReachable.return_value = False
+        result = self.templates.home()
+        assert "Home Assistant is Offline" in result
+
+    def test_home_returns_dashboard_when_reachable(self):
+        self.mock_comms.isReachable.return_value = True
+        self.mock_comms.getRequest.return_value = _make_ok("10.0", {"temperature": 25, "dew_point": 15})
+        result = self.templates.home()
+        assert "Home Assistant is Offline" not in result
+        assert "table" in result

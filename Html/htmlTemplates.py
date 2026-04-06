@@ -14,6 +14,23 @@ class HtmlTemplates:
         self._h = HtmlGenerator()
         self._hassComms = HassCommunicationsCoordinator()
 
+    def _build_head(self):
+        """
+        Builds the standard HTML <head> section shared by all pages.
+
+        Returns:
+          str: The HTML <head> element with stylesheet, viewport, meta-refresh, and title.
+        """
+        return self._h.head(
+            "",
+            [
+                self._h.link([f"rel='stylesheet' type='text/css' href={CSS_STYLESHEET_PATH}"]),
+                self._h.meta(["name='viewport' content='width=device-width' initial-scale=1.0"]),
+                self._h.meta([f"http-equiv='refresh' content={PAGE_REFRESH_INTERVAL_SECONDS}"]),
+                self._h.title("", ["Dashboard"]),
+            ],
+        )
+
     def home(self):
         """
         Generates the HTML content for the home page of the dashboard.
@@ -21,18 +38,23 @@ class HtmlTemplates:
         Returns:
           str: The HTML content for the home page.
         """
+        if not self._hassComms.isReachable():
+            return self.offline_page()
+
+        return self.dashboard()
+
+    def dashboard(self) -> str:
+        """
+        Generates an HTML page for the main dashboard.
+
+        Returns:
+          str: The HTML content for the dashboard page.
+        """
+
         return self._h.html(
             "",
             [
-                self._h.head(
-                    "",
-                    [
-                        self._h.link([f"rel='stylesheet' type='text/css' href={CSS_STYLESHEET_PATH}"]),
-                        self._h.meta(["name='viewport' content='width=device-width' initial-scale=1.0"]),
-                        self._h.meta([f"http-equiv='refresh' content={PAGE_REFRESH_INTERVAL_SECONDS}"]),
-                        self._h.title("", ["Dashboard"]),
-                    ],
-                ),
+                self._build_head(),
                 self._h.body(
                     "",
                     [
@@ -89,6 +111,41 @@ class HtmlTemplates:
                                                 ),
                                             ],
                                         )
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+    def offline_page(self) -> str:
+        """
+        Generates an HTML page indicating Home Assistant is offline.
+
+        Displays a centered "Home Assistant is offline" message with the
+        current time below it. Includes meta-refresh so the page will
+        automatically recover when Home Assistant comes back online.
+
+        Returns:
+          str: The HTML content for the offline page.
+        """
+        return self._h.html(
+            "",
+            [
+                self._build_head(),
+                self._h.body(
+                    "",
+                    [
+                        self._h.div(
+                            "id=offline_wrapper",
+                            [
+                                self._h.div(
+                                    "id=offline_message",
+                                    [
+                                        self._h.h1("", ["Home Assistant is Unreachable"]),
+                                        self._h.p("", [f"{datetime.datetime.now().strftime('%H:%M')}"]),
                                     ],
                                 ),
                             ],
