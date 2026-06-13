@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from Html.htmlTemplates import HtmlTemplates
+from utils.constants import PAGE_REFRESH_INTERVAL_SECONDS
 
 
 def _make_ok(state, attributes=None):
@@ -170,6 +171,25 @@ class TestPeopleAtHome:
     def test_person_error(self):
         self.mock_comms.getRequest.return_value = ERR_RESPONSE
         assert self.templates.is_person_home("person.test") is False
+
+
+class TestBuildHead:
+    def setup_method(self):
+        self.templates = _make_templates()
+
+    def test_meta_refresh_content_value_is_quoted(self):
+        # Old e-reader browsers fail to honor http-equiv refresh when the
+        # content value is unquoted (e.g. content=60), so it must be quoted.
+        result = self.templates._build_head()
+        assert f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'" in result
+        assert f"content={PAGE_REFRESH_INTERVAL_SECONDS}>" not in result
+
+    def test_viewport_initial_scale_inside_content_attribute(self):
+        # initial-scale must live inside the viewport content attribute, not
+        # leak out as a malformed standalone attribute.
+        result = self.templates._build_head()
+        assert "content='width=device-width, initial-scale=1.0'" in result
+        assert "content='width=device-width' initial-scale=1.0" not in result
 
 
 class TestOfflinePage:

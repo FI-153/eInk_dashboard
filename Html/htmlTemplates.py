@@ -25,8 +25,8 @@ class HtmlTemplates:
             "",
             [
                 self._h.link([f"rel='stylesheet' type='text/css' href={CSS_STYLESHEET_PATH}"]),
-                self._h.meta(["name='viewport' content='width=device-width' initial-scale=1.0"]),
-                self._h.meta([f"http-equiv='refresh' content={PAGE_REFRESH_INTERVAL_SECONDS}"]),
+                self._h.meta(["name='viewport'", "content='width=device-width, initial-scale=1.0'"]),
+                self._h.meta(["http-equiv='refresh'", f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'"]),
                 self._h.title("", ["Dashboard"]),
             ],
         )
