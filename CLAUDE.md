@@ -26,6 +26,7 @@ python3 -m pytest tests/test_html_generator.py::TestHtmlGenerator::test_p_tag -v
 ```bash
 make lint                        # Check linting + formatting
 make format                      # Auto-fix lint issues and format
+make quality                     # Run lint then format together
 ruff check .                     # Lint only
 ruff format .                    # Format only
 ```
@@ -43,14 +44,15 @@ Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Ass
 
 ## Architecture
 
-**Request flow:** Browser → Flask (`app.py`) → `HtmlTemplates.home()` → `HassCommunicationsCoordinator.getRequest()` per sensor → Home Assistant REST API → HTML response with meta-refresh.
+**Request flow:** Browser → Flask (`app.py`) → `HtmlTemplates.home()` → `HassCommunicationsCoordinator.isReachable()`. If HA is unreachable, `home()` returns `offline_page()`; otherwise it returns `dashboard()`, which calls `getRequest()` per sensor → Home Assistant REST API → HTML response with meta-refresh.
 
 ### Key Files
 
 - **`app.py`** — Flask entry point. Two routes: `/` (dashboard) and `/favicon.ico`.
 - **`Html/htmlTemplates.py`** — Core logic. `HtmlTemplates` class builds the full dashboard page by fetching each sensor and composing HTML via `HtmlGenerator`. Each dashboard cell (weather, calendar, presence, network stats) is a separate method.
 - **`Html/htmlGenerator.py`** — HTML tag builder utility. Generates tags with attributes; used by `htmlTemplates.py` instead of a template engine.
-- **`HomeAssistant/hassCommunicationsCoordinator.py`** — API client. `getRequest(id)` fetches entity state from Home Assistant using Bearer token auth.
+- **`HomeAssistant/hassCommunicationsCoordinator.py`** — API client. `getRequest(id)` fetches entity state from Home Assistant using Bearer token auth; `isReachable()` health-checks the HA instance to decide between the dashboard and offline page.
+- **`utils/logger.py`** — Shared `logger` instance imported across modules.
 - **`utils/constants.py`** — All configuration: HA connection, sensor IDs, refresh interval. Created from `.customize` template.
 - **`static/css/styles.css`** — eInk-optimized CSS. 180° rotation, large fonts, black-on-white, fixed 600x800px dimensions.
 - **`static/assets/weather_svg/`** — SVG icons for weather conditions.

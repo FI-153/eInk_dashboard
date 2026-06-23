@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from Html.htmlTemplates import HtmlTemplates
-from utils.constants import PAGE_REFRESH_INTERVAL_SECONDS
+from utils.constants import CSS_STYLESHEET_PATH, PAGE_REFRESH_INTERVAL_SECONDS
 
 
 def _make_ok(state, attributes=None):
@@ -190,6 +190,14 @@ class TestBuildHead:
         result = self.templates._build_head()
         assert "content='width=device-width, initial-scale=1.0'" in result
         assert "content='width=device-width' initial-scale=1.0" not in result
+
+    def test_stylesheet_href_value_is_quoted(self):
+        # Old e-reader browsers can fail to load attributes whose values are
+        # unquoted (e.g. href=./styles.css), so the stylesheet href must be
+        # quoted just like the meta tags.
+        result = self.templates._build_head()
+        assert f"href='{CSS_STYLESHEET_PATH}'" in result
+        assert f"href={CSS_STYLESHEET_PATH}" not in result
 
 
 class TestOfflinePage:

@@ -24,7 +24,7 @@ class HtmlTemplates:
         return self._h.head(
             "",
             [
-                self._h.link([f"rel='stylesheet' type='text/css' href={CSS_STYLESHEET_PATH}"]),
+                self._h.link(["rel='stylesheet'", "type='text/css'", f"href='{CSS_STYLESHEET_PATH}'"]),
                 self._h.meta(["name='viewport'", "content='width=device-width, initial-scale=1.0'"]),
                 self._h.meta(["http-equiv='refresh'", f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'"]),
                 self._h.title("", ["Dashboard"]),
@@ -124,7 +124,7 @@ class HtmlTemplates:
         """
         Generates an HTML page indicating Home Assistant is offline.
 
-        Displays a centered "Home Assistant is offline" message with the
+        Displays a centered "Home Assistant is Offline" message with the
         current time below it. Includes meta-refresh so the page will
         automatically recover when Home Assistant comes back online.
 
@@ -144,7 +144,7 @@ class HtmlTemplates:
                                 self._h.div(
                                     "id=offline_message",
                                     [
-                                        self._h.h1("", ["Home Assistant is Unreachable"]),
+                                        self._h.h1("", ["Home Assistant is Offline"]),
                                         self._h.p("", [f"{datetime.datetime.now().strftime('%H:%M')}"]),
                                     ],
                                 ),
