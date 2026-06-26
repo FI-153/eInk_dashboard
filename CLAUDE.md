@@ -11,8 +11,10 @@ Python Flask web server that renders a Home Assistant dashboard optimized for e-
 ### Local Development
 ```bash
 make run                         # Flask debug server on 0.0.0.0:6123 (loads .env)
-make setup                       # Install all dependencies (including dev)
+make setup                       # Install all dependencies (including dev) via uv sync
 ```
+
+Dependencies are managed with [uv](https://docs.astral.sh/uv/): runtime deps live in `pyproject.toml` under `[project.dependencies]`, dev tools under `[dependency-groups]`, and exact versions are pinned in `uv.lock`. After changing dependencies in `pyproject.toml`, run `uv lock` to refresh the lockfile (CI fails if they are out of sync). The Makefile and Dockerfile install via uv; there are no `requirements*.txt` files.
 
 ### Tests
 ```bash

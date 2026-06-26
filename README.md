@@ -9,7 +9,7 @@ I wrote more about it [here](https://medium.com/@federicoimberti/repurposing-an-
 
 - Docker
 - Docker Compose (V2)
-- Python 3.9+ (for local development)
+- Python 3.9+ and [uv](https://docs.astral.sh/uv/) (for local development)
 
 ## Setup
 

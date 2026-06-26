@@ -2,30 +2,35 @@ name: CI
 
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
   pull_request:
-    branches: [develop]
+    branches: [develop, main]
 
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.9"
-      - run: pip install --no-cache-dir -r requirements-dev.txt
       - run: make lint
+
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv lock --check
 
   test:
     runs-on: ubuntu-latest
     needs: quality
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.9"
-      - run: pip install --no-cache-dir -r requirements-dev.txt
       - run: make test
 
   build-image:

@@ -1,7 +1,22 @@
 [project]
 name = "eink-dashboard"
-version = "1.1.0"
+version = "1.2.0"
 requires-python = ">=3.9"
+dependencies = [
+    "flask==3.1.0",
+    "gunicorn==23.0.0",
+    "requests==2.32.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==8.3.4",
+    "ruff==0.9.7",
+]
+
+# This is an application, not a packaged library: don't try to build/install it.
+[tool.uv]
+package = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
