@@ -1,7 +1,7 @@
 import datetime
 
 from HomeAssistant.hassCommunicationsCoordinator import HassCommunicationsCoordinator
-from Html.htmlGenerator import HtmlGenerator
+from Html import htmlGenerator as h
 from utils.constants import *
 
 WEATHER_CONDITION_MAP = {
@@ -27,7 +27,6 @@ class HtmlTemplates:
         """
         Initializes the HtmlTemplates class.
         """
-        self._h = HtmlGenerator()
         self._hassComms = HassCommunicationsCoordinator()
 
     def _build_head(self):
@@ -37,13 +36,13 @@ class HtmlTemplates:
         Returns:
           str: The HTML <head> element with stylesheet, viewport, meta-refresh, and title.
         """
-        return self._h.head(
+        return h.head(
             "",
             [
-                self._h.link(["rel='stylesheet'", "type='text/css'", f"href='{CSS_STYLESHEET_PATH}'"]),
-                self._h.meta(["name='viewport'", "content='width=device-width, initial-scale=1.0'"]),
-                self._h.meta(["http-equiv='refresh'", f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'"]),
-                self._h.title("", ["Dashboard"]),
+                h.link(["rel='stylesheet'", "type='text/css'", f"href='{CSS_STYLESHEET_PATH}'"]),
+                h.meta(["name='viewport'", "content='width=device-width, initial-scale=1.0'"]),
+                h.meta(["http-equiv='refresh'", f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'"]),
+                h.title("", ["Dashboard"]),
             ],
         )
 
@@ -67,41 +66,41 @@ class HtmlTemplates:
           str: The HTML content for the dashboard page.
         """
 
-        return self._h.html(
+        return h.html(
             "",
             [
                 self._build_head(),
-                self._h.body(
+                h.body(
                     "",
                     [
-                        self._h.table(
+                        h.table(
                             "border=2",
                             [
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td("", [self.get_time(time_type="currentTime")]),
-                                        self._h.td("", [self.get_people_at_home()]),
+                                        h.td("", [self.get_time()]),
+                                        h.td("", [self.get_people_at_home()]),
                                     ],
                                 ),
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td("id=big_table_cell", [self.weather_cell()]),
-                                        self._h.td("id=big_table_cell", [self.calendar_cell()]),
+                                        h.td("id=big_table_cell", [self.weather_cell()]),
+                                        h.td("id=big_table_cell", [self.calendar_cell()]),
                                     ],
                                 ),
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td(
+                                        h.td(
                                             "colspan=2",
                                             [
                                                 self.public_ip(),
-                                                self._h.div(
+                                                h.div(
                                                     "id=net_stats",
                                                     [
-                                                        self._h.p(
+                                                        h.p(
                                                             "",
                                                             [
                                                                 self.display_double_net_stat(
@@ -112,7 +111,7 @@ class HtmlTemplates:
                                                                 )
                                                             ],
                                                         ),
-                                                        self._h.p(
+                                                        h.p(
                                                             "",
                                                             [
                                                                 self.display_double_net_stat(
@@ -147,21 +146,21 @@ class HtmlTemplates:
         Returns:
           str: The HTML content for the offline page.
         """
-        return self._h.html(
+        return h.html(
             "",
             [
                 self._build_head(),
-                self._h.body(
+                h.body(
                     "",
                     [
-                        self._h.div(
+                        h.div(
                             "id=offline_wrapper",
                             [
-                                self._h.div(
+                                h.div(
                                     "id=offline_message",
                                     [
-                                        self._h.h1("", ["Home Assistant is Offline"]),
-                                        self._h.p("", [f"{datetime.datetime.now().strftime('%H:%M')}"]),
+                                        h.h1("", ["Home Assistant is Offline"]),
+                                        h.p("", [f"{datetime.datetime.now().strftime('%H:%M')}"]),
                                     ],
                                 ),
                             ],
@@ -200,25 +199,23 @@ class HtmlTemplates:
             dew_point = attributes.get("dew_point", "Err")
             condition = weather.get("state", "Err")
 
-        return self._h.div(
+        return h.div(
             "id=weather_cell",
             [
-                self._h.p(
+                h.p(
                     "id=city_name",
                     [
-                        self._h.img(["id=city_icon", "src='../static/assets/weather_svg/location.svg'", "alt='city'"]),
+                        h.img(["id=city_icon", "src='../static/assets/weather_svg/location.svg'", "alt='city'"]),
                         WEATHER_CITY_NAME,
                     ],
                 ),
-                self._h.p("id=temperature", [f"{temperature}&deg"]),
-                self._h.img(
-                    ["id=weather_icon", f"src='../static/assets/weather_svg/{condition}.svg'", f"alt='{condition}'"]
-                ),
-                self._h.div(
+                h.p("id=temperature", [f"{temperature}&deg"]),
+                h.img(["id=weather_icon", f"src='../static/assets/weather_svg/{condition}.svg'", f"alt='{condition}'"]),
+                h.div(
                     "",
                     [
-                        self._h.p("", [f"{self.weather_condition_formatter(condition)}"]),
-                        self._h.p("", [f"Dew Point: {dew_point}&deg"]),
+                        h.p("", [f"{self.weather_condition_formatter(condition)}"]),
+                        h.p("", [f"Dew Point: {dew_point}&deg"]),
                     ],
                 ),
             ],
@@ -247,9 +244,9 @@ class HtmlTemplates:
         """
         [day, month, number] = datetime.datetime.now().strftime("%a %b %d").split()
 
-        return self._h.div(
+        return h.div(
             "id=date_field",
-            [self._h.p("id=day_month", [f"{day}   {month}"]), self._h.p("id=date_number", [f"{int(number)}"])],
+            [h.p("id=day_month", [f"{day}   {month}"]), h.p("id=date_number", [f"{int(number)}"])],
         )
 
     def eta_to_work_component(self):
@@ -267,7 +264,7 @@ class HtmlTemplates:
         else:
             eta = int(float(resp["state"]))
 
-        return self._h.div("id=travel_time", [self._h.p("", [f"{eta} Minutes To Work"])])
+        return h.div("id=travel_time", [h.p("", [f"{eta} Minutes To Work"])])
 
     def calendar_cell(self):
         """
@@ -297,7 +294,7 @@ class HtmlTemplates:
         else:
             ip = resp["state"]
 
-        return self._h.div("id=public_ip", [self._h.p("id=public_ip_addr", [f"Public IP: {ip}"])])
+        return h.div("id=public_ip", [h.p("id=public_ip_addr", [f"Public IP: {ip}"])])
 
     def get_net_stat(self, entity_id):
         """
@@ -349,13 +346,13 @@ class HtmlTemplates:
         stat_lan = self._format_net_stat(self.get_net_stat(id_lan))
         stat_wan = self._format_net_stat(self.get_net_stat(id_wan))
 
-        return self._h.div(
+        return h.div(
             "id='net_stats_elem'",
             [
-                self._h.p(
+                h.p(
                     "",
                     [
-                        self._h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
+                        h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
                         f"{stat_lan}",
                         " / ",
                         f"{stat_wan}",
@@ -365,25 +362,14 @@ class HtmlTemplates:
             ],
         )
 
-    def get_time(self, time_type="lastUpdated"):
+    def get_time(self):
         """
-        Generates an HTML <h1> element displaying the specified time.
+        Generates an HTML <h1> element displaying the current time (HH:MM).
 
-        Args:
-          time_type (str): The type of time to display. Options are "lastUpdated" for the last update time
-                and "currentTime" for the current time. Defaults to "lastUpdated". In order to have a
-                correctly updated time you must set PAGE_REFRESH_INTERVAL_SECONDS to 60 seconds.
-                Otherwise if you can run scripts just call this method once every minute.
-
-        Returns
-          str: An HTML <h1> element with the specified time or an error message if the type is invalid.
+        Returns:
+          str: An HTML <h1> element with the current time.
         """
-        if time_type == "lastUpdated":
-            return self._h.h1("id='h1_time'", [f"Last Updated @{datetime.datetime.now().strftime('%H:%M')}"])
-        elif time_type == "currentTime":
-            return self._h.h1("id='h1_time'", [f"{datetime.datetime.now().strftime('%H:%M')}"])
-        else:
-            return f"Invalid time option: {time_type}"
+        return h.h1("id='h1_time'", [f"{datetime.datetime.now().strftime('%H:%M')}"])
 
     def get_people_at_home(self):
         """
@@ -398,7 +384,7 @@ class HtmlTemplates:
           str: An HTML <h1> element with the labels of people at home.
         """
         initials = "".join(f" {label}" for entity_id, label in PERSON_TRACKERS if self.is_person_home(entity_id))
-        return self._h.h1("", [f"@home:{initials}"])
+        return h.h1("", [f"@home:{initials}"])
 
     def is_person_home(self, person_id):
         """

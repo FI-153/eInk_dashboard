@@ -161,21 +161,8 @@ class TestGetTime:
         mock_now = MagicMock()
         mock_now.strftime.return_value = "14:30"
         mock_datetime.datetime.now.return_value = mock_now
-        result = self.templates.get_time(time_type="currentTime")
+        result = self.templates.get_time()
         assert "14:30" in result
-
-    @patch("Html.htmlTemplates.datetime")
-    def test_last_updated(self, mock_datetime):
-        mock_now = MagicMock()
-        mock_now.strftime.return_value = "14:30"
-        mock_datetime.datetime.now.return_value = mock_now
-        result = self.templates.get_time(time_type="lastUpdated")
-        assert "Last Updated" in result
-        assert "14:30" in result
-
-    def test_invalid_time_type(self):
-        result = self.templates.get_time(time_type="invalid")
-        assert "Invalid time option" in result
 
 
 class TestPeopleAtHome:
