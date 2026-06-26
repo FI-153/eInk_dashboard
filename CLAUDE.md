@@ -10,7 +10,7 @@ Python Flask web server that renders a Home Assistant dashboard optimized for e-
 
 ### Local Development
 ```bash
-make run                         # Flask debug server on 0.0.0.0:6123
+make run                         # Flask debug server on 0.0.0.0:6123 (loads .env)
 make setup                       # Install all dependencies (including dev)
 ```
 
@@ -40,7 +40,7 @@ make docker-down                 # Stop containers
 
 ## Setup
 
-Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Assistant connection details and sensor IDs. This file is gitignored.
+`utils/constants.py` reads all configuration from environment variables. For local development, copy `.env.example` to `.env` (gitignored) and run `make run` — it sets `USE_DOTENV=1`, which is the only mode that loads `.env`. Docker and other deployments pass the same variables as real environment variables (see `docker-compose.yml`); they never read `.env`.
 
 ## Architecture
 
@@ -53,7 +53,7 @@ Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Ass
 - **`Html/htmlGenerator.py`** — HTML tag builder utility. Generates tags with attributes; used by `htmlTemplates.py` instead of a template engine.
 - **`HomeAssistant/hassCommunicationsCoordinator.py`** — API client. `getRequest(id)` fetches entity state from Home Assistant using Bearer token auth; `isReachable()` health-checks the HA instance to decide between the dashboard and offline page.
 - **`utils/logger.py`** — Shared `logger` instance imported across modules.
-- **`utils/constants.py`** — All configuration: HA connection, sensor IDs, refresh interval. Created from `.customize` template.
+- **`utils/constants.py`** — Loads all configuration (HA connection, sensor IDs, refresh interval) from environment variables. Loads `.env` only when `USE_DOTENV=1` (set by `make run`); `.env.example` is the template.
 - **`static/css/styles.css`** — eInk-optimized CSS. 180° rotation, large fonts, black-on-white, fixed 600x800px dimensions.
 - **`static/assets/weather_svg/`** — SVG icons for weather conditions.
 

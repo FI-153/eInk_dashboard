@@ -8,7 +8,7 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  run            Flask debug server on 0.0.0.0:6123"
+	@echo "  run            Flask debug server on 0.0.0.0:6123 (config from .env)"
 	@echo "  test           Run full test suite"
 	@echo "  quality        Linting + formatting + auto-fix"
 	@echo "  lint           Check linting + formatting"
@@ -19,7 +19,7 @@ help:
 	@echo "  docker-down    Stop Docker containers"
 
 run:
-	$(PYTHON) app.py
+	USE_DOTENV=1 $(PYTHON) app.py
 
 test:
 	$(PYTHON) -m pytest tests/ -v
