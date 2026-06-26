@@ -3,7 +3,23 @@ import datetime
 from HomeAssistant.hassCommunicationsCoordinator import HassCommunicationsCoordinator
 from Html.htmlGenerator import HtmlGenerator
 from utils.constants import *
-from utils.logger import logger
+
+WEATHER_CONDITION_MAP = {
+    "clear-night": "Clear Night",
+    "cloudy": "Cloudy",
+    "fog": "Foggy",
+    "hail": "Hailing",
+    "lightning": "Lightning",
+    "lightning-rainy": "Lightning with Rain",
+    "partlycloudy": "Partly Cloudy",
+    "pouring": "Pouring",
+    "rainy": "Rainy",
+    "snowy": "Snowy",
+    "snowy-rainy": "Snow with Rain",
+    "sunny": "Sunny",
+    "windy": "Windy",
+    "windy-variant": "Windy Variant",
+}
 
 
 class HtmlTemplates:
@@ -155,15 +171,6 @@ class HtmlTemplates:
             ],
         )
 
-    def title(self):
-        """
-        Generates an HTML <h1> element with the specified id and content.
-
-        Returns:
-          str: An HTML <h1> element with id "dash_title".
-        """
-        return self._h.h1("id=dash_title", ["Lab Status"])
-
     def weather_cell(self):
         """
         Generates an HTML representation of the weather cell.
@@ -188,9 +195,10 @@ class HtmlTemplates:
         if weather["result"] != "OK":
             [temperature, dew_point, condition] = ["Err", "Err", "Err"]
         else:
-            temperature = weather["attributes"]["temperature"]
-            dew_point = weather["attributes"]["dew_point"]
-            condition = weather["state"]
+            attributes = weather.get("attributes", {})
+            temperature = attributes.get("temperature", "Err")
+            dew_point = attributes.get("dew_point", "Err")
+            condition = weather.get("state", "Err")
 
         return self._h.div(
             "id=weather_cell",
@@ -227,23 +235,7 @@ class HtmlTemplates:
           str: The formatted weather condition string. If the condition code is not recognized,
              returns "Format Err.".
         """
-        condition_map = {
-            "clear-night": "Clear Night",
-            "cloudy": "Cloudy",
-            "fog": "Foggy",
-            "hail": "Hailing",
-            "lightning": "Lightning",
-            "lightning-rainy": "Lightning with Rain",
-            "partlycloudy": "Partly Cloudy",
-            "pouring": "Pouring",
-            "rainy": "Rainy",
-            "snowy": "Snowy",
-            "snowy-rainy": "Snow with Rain",
-            "sunny": "Sunny",
-            "windy": "Windy",
-            "windy-variant": "Windy Variant",
-        }
-        return condition_map.get(condition, "Format Err.")
+        return WEATHER_CONDITION_MAP.get(condition, "Format Err.")
 
     def calendar_component(self):
         """
@@ -290,16 +282,6 @@ class HtmlTemplates:
             {self.eta_to_work_component()}
           """
 
-    def reload_button(self):
-        """
-        Generates an HTML button element that reloads the page when clicked.
-
-        Returns:
-          str: An HTML button element.
-        """
-        logger.info("Page reloaded from button")
-        return self._h.button("onclick='location.reload()'", ["Reload"])
-
     def public_ip(self):
         """
         Generates an HTML representation of the public IP address.
@@ -330,38 +312,24 @@ class HtmlTemplates:
         resp = self._hassComms.getRequest(entity_id)
 
         if resp["result"] != "OK":
-            return -1.0
+            return "Err"
 
         return resp["state"]
 
-    def display_net_stat(self, entity_id, text, icon):
+    def _format_net_stat(self, value):
         """
-        Generates an HTML representation of a single network statistic.
-        This method retrieves the network statistic from a sensor and formats it.
+        Formats a network statistic value for display.
 
         Args:
-          entity_id (str): The sensor ID to retrieve the network statistic for.
-          text (str): The text description of the network statistic.
-          icon (str): The icon to display for the network statistic.
+          value: The raw network statistic value (a numeric string or "Err").
 
         Returns:
-          str: An HTML string representing the network statistic.
+          The value rounded to one decimal place, or "Err" if it is not numeric.
         """
-        stat = round(float(self.get_net_stat(entity_id)), 1)
-
-        return self._h.div(
-            "id='net_stats_elem'",
-            [
-                self._h.p(
-                    "",
-                    [
-                        self._h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
-                        f"{stat}",
-                        " MB/S",
-                    ],
-                )
-            ],
-        )
+        try:
+            return round(float(value), 1)
+        except (ValueError, TypeError):
+            return "Err"
 
     def display_double_net_stat(self, id_lan, id_wan, text, icon):
         """
@@ -378,8 +346,8 @@ class HtmlTemplates:
           str: An HTML string representing the LAN and WAN network statistics.
         """
 
-        stat_lan = round(float(self.get_net_stat(id_lan)), 1)
-        stat_wan = round(float(self.get_net_stat(id_wan)), 1)
+        stat_lan = self._format_net_stat(self.get_net_stat(id_lan))
+        stat_wan = self._format_net_stat(self.get_net_stat(id_wan))
 
         return self._h.div(
             "id='net_stats_elem'",
@@ -421,24 +389,16 @@ class HtmlTemplates:
         """
         Generates an HTML header element indicating which people are currently at home.
 
-        This method checks the presence of specific individuals using their tracker sensor IDs
-        and returns an HTML <h1> element containing the initials of those who are at home.
+        Iterates over PERSON_TRACKERS, a list of (entity_id, label) pairs, and renders the
+        label of each person whose tracker reports them as home. Entries whose ID is unset
+        or unreachable are simply skipped, so the section adapts to any number of configured
+        people without crashing on partial configuration.
 
         Returns:
-          str: An HTML <h1> element with the initials of people at home.
-            - 'C' for Claudio
-            - 'F' for Federico
-            - 'L' for Loretta
+          str: An HTML <h1> element with the labels of people at home.
         """
-        return self._h.h1(
-            "",
-            [
-                f"""@home:\
- {"C" if self.is_person_home(PERSON_1_TRACKER_SENSOR_ID) else ""}\
- {"F" if self.is_person_home(PERSON_2_TRACKER_SENSOR_ID) else ""}\
- {"L" if self.is_person_home(PERSON_3_TRACKER_SENSOR_ID) else ""}"""
-            ],
-        )
+        initials = "".join(f" {label}" for entity_id, label in PERSON_TRACKERS if self.is_person_home(entity_id))
+        return self._h.h1("", [f"@home:{initials}"])
 
     def is_person_home(self, person_id):
         """
@@ -448,11 +408,11 @@ class HtmlTemplates:
           person_id (str): The ID of the person to check.
 
         Returns:
-          str: True if the person is home, otherwise False
+          bool: True if the person is home, otherwise False.
         """
         resp = self._hassComms.getRequest(person_id)
 
         if resp["result"] != "OK":
             return False
 
-        return True if resp["state"] == "home" else False
+        return resp["state"] == "home"

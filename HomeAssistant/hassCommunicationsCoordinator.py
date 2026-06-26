@@ -52,13 +52,17 @@ class HassCommunicationsCoordinator:
             logger.error(f"Error getting state for {id}: {response.status_code}")
             return {"result": "err"}
 
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except ValueError:
+            logger.error(f"Non-JSON response for {id}")
+            return {"result": "err"}
 
         if "message" in response_json and response_json["message"] == "Entity not found.":
             logger.error(f"This entity does not exist: {id}")
             return {"result": "err"}
 
-        if "state" in response_json and response_json["state"] == "unavailable":
+        if response_json.get("state") in ("unavailable", "unknown", None):
             logger.error(f"Unavailable entity w/ id: {id}")
             return {"result": "err"}
 

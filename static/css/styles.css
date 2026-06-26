@@ -30,7 +30,8 @@ body {
 }
 
 #city_name {
-  margin-block: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   padding-top: 10px;
 }
 
@@ -66,22 +67,18 @@ body {
 }
 
 #net_stats {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-box-pack: justify;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
-  -webkit-justify-content: space-between;
-  justify-content: space-between;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+#net_stats > p {
+  display: table-cell;
+  text-align: center;
 }
 
 #net_stats_elem {
   vertical-align: middle;
-  display: flex;
-  align-items: center;
   margin: 0px;
 }
 
@@ -115,7 +112,6 @@ td {
 }
 
 p {
-  margin-block: 0px;
   margin: 5px;
   padding: 0px;
   font-size: 25px;

@@ -54,6 +54,14 @@ class TestWeatherCell:
         result = self.templates.weather_cell()
         assert "Err" in result
 
+    def test_weather_cell_missing_attributes(self):
+        # A reachable weather entity may omit attributes like dew_point; the
+        # cell must show "Err" for the missing field instead of raising KeyError.
+        self.mock_comms.getRequest.return_value = _make_ok("sunny", {"temperature": 25})
+        result = self.templates.weather_cell()
+        assert "25" in result
+        assert "Err" in result
+
 
 class TestCalendarComponent:
     def setup_method(self):
@@ -116,7 +124,7 @@ class TestNetStats:
     def test_get_net_stat_error(self):
         self.mock_comms.getRequest.return_value = ERR_RESPONSE
         result = self.templates.get_net_stat("sensor.download")
-        assert result == -1.0
+        assert result == "Err"
 
     def test_display_double_net_stat(self):
         self.mock_comms.getRequest.side_effect = [
@@ -127,6 +135,21 @@ class TestNetStats:
         assert "100.5" in result
         assert "50.3" in result
         assert "MB/S" in result
+
+    def test_display_double_net_stat_shows_err_on_failure(self):
+        # A failed sensor must render "Err", never a fabricated numeric value
+        # like -1.0 that looks like a real measurement.
+        self.mock_comms.getRequest.side_effect = [ERR_RESPONSE, ERR_RESPONSE]
+        result = self.templates.display_double_net_stat("sensor.lan_dl", "sensor.wan_dl", "Download", "arrow_down")
+        assert "Err" in result
+        assert "-1.0" not in result
+
+    def test_display_double_net_stat_handles_non_numeric_state(self):
+        # A non-numeric state must not crash the render with a ValueError.
+        self.mock_comms.getRequest.side_effect = [_make_ok("unknown"), _make_ok("12.0")]
+        result = self.templates.display_double_net_stat("sensor.lan_dl", "sensor.wan_dl", "Download", "arrow_down")
+        assert "Err" in result
+        assert "12.0" in result
 
 
 class TestGetTime:
@@ -171,6 +194,55 @@ class TestPeopleAtHome:
     def test_person_error(self):
         self.mock_comms.getRequest.return_value = ERR_RESPONSE
         assert self.templates.is_person_home("person.test") is False
+
+    def _home_for(self, *home_ids):
+        # Returns a getRequest side_effect that reports the given ids as home.
+        home = set(home_ids)
+        return lambda eid: _make_ok("home") if eid in home else _make_ok("not_home")
+
+    @patch(
+        "Html.htmlTemplates.PERSON_TRACKERS",
+        [("person.a", "A"), ("person.b", "B"), ("person.c", "C")],
+        create=True,
+    )
+    def test_shows_only_labels_of_people_home(self):
+        self.mock_comms.getRequest.side_effect = self._home_for("person.a", "person.c")
+        result = self.templates.get_people_at_home()
+        assert "@home:" in result
+        assert "A" in result
+        assert "C" in result
+        # B is away, so its label must not be rendered.
+        assert "B" not in result
+
+    @patch(
+        "Html.htmlTemplates.PERSON_TRACKERS",
+        [("person.a", "A"), ("", "X")],
+        create=True,
+    )
+    def test_skips_unset_id_without_crashing(self):
+        # A blank id resolves to an HA error -> not home -> skipped, no crash.
+        def side_effect(eid):
+            return _make_ok("home") if eid == "person.a" else ERR_RESPONSE
+
+        self.mock_comms.getRequest.side_effect = side_effect
+        result = self.templates.get_people_at_home()
+        assert "A" in result
+        assert "X" not in result
+
+    @patch("Html.htmlTemplates.PERSON_TRACKERS", [], create=True)
+    def test_empty_trackers_renders_header_without_crashing(self):
+        result = self.templates.get_people_at_home()
+        assert "@home:" in result
+
+    @patch(
+        "Html.htmlTemplates.PERSON_TRACKERS",
+        [("person.a", "A"), ("person.b", "B"), ("person.c", "C"), ("person.d", "D")],
+        create=True,
+    )
+    def test_is_data_driven_for_additional_people(self):
+        self.mock_comms.getRequest.side_effect = self._home_for("person.d")
+        result = self.templates.get_people_at_home()
+        assert "D" in result
 
 
 class TestBuildHead:

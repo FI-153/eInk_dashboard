@@ -62,6 +62,28 @@ class TestHassCommunicationsCoordinator:
         assert result["result"] == "err"
 
     @patch("HomeAssistant.hassCommunicationsCoordinator.requests.get")
+    def test_unknown_entity(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"state": "unknown"}
+        mock_get.return_value = mock_response
+
+        result = self.coordinator.getRequest("sensor.starting_up")
+
+        assert result["result"] == "err"
+
+    @patch("HomeAssistant.hassCommunicationsCoordinator.requests.get")
+    def test_non_json_response_returns_err(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.side_effect = ValueError("No JSON object could be decoded")
+        mock_get.return_value = mock_response
+
+        result = self.coordinator.getRequest("sensor.weather")
+
+        assert result["result"] == "err"
+
+    @patch("HomeAssistant.hassCommunicationsCoordinator.requests.get")
     def test_request_includes_auth_header(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 200
