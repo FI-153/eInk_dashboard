@@ -10,9 +10,11 @@ Python Flask web server that renders a Home Assistant dashboard optimized for e-
 
 ### Local Development
 ```bash
-make run                         # Flask debug server on 0.0.0.0:6123
-make setup                       # Install all dependencies (including dev)
+make run                         # Flask debug server on 0.0.0.0:6123 (loads .env)
+make setup                       # Install all dependencies (including dev) via uv sync
 ```
+
+Dependencies are managed with [uv](https://docs.astral.sh/uv/): runtime deps live in `pyproject.toml` under `[project.dependencies]`, dev tools under `[dependency-groups]`, and exact versions are pinned in `uv.lock`. After changing dependencies in `pyproject.toml`, run `uv lock` to refresh the lockfile (CI fails if they are out of sync). The Makefile and Dockerfile install via uv; there are no `requirements*.txt` files.
 
 ### Tests
 ```bash
@@ -26,6 +28,7 @@ python3 -m pytest tests/test_html_generator.py::TestHtmlGenerator::test_p_tag -v
 ```bash
 make lint                        # Check linting + formatting
 make format                      # Auto-fix lint issues and format
+make quality                     # Run lint then format together
 ruff check .                     # Lint only
 ruff format .                    # Format only
 ```
@@ -39,23 +42,26 @@ make docker-down                 # Stop containers
 
 ## Setup
 
-Copy `utils/constants.py.customize` to `utils/constants.py` and fill in Home Assistant connection details and sensor IDs. This file is gitignored.
+`utils/constants.py` reads all configuration from environment variables. For local development, copy `.env.example` to `.env` (gitignored) and run `make run` — it sets `USE_DOTENV=1`, which is the only mode that loads `.env`. Docker and other deployments pass the same variables as real environment variables (see `docker-compose.yml`); they never read `.env`.
 
 ## Architecture
 
-**Request flow:** Browser → Flask (`app.py`) → `HtmlTemplates.home()` → `HassCommunicationsCoordinator.getRequest()` per sensor → Home Assistant REST API → HTML response with meta-refresh.
+**Request flow:** Browser → Flask (`app.py`) → `HtmlTemplates.home()` → `HassCommunicationsCoordinator.isReachable()`. If HA is unreachable, `home()` returns `offline_page()`; otherwise it returns `dashboard()`, which calls `getRequest()` per sensor → Home Assistant REST API → HTML response with meta-refresh.
 
 ### Key Files
 
 - **`app.py`** — Flask entry point. Two routes: `/` (dashboard) and `/favicon.ico`.
 - **`Html/htmlTemplates.py`** — Core logic. `HtmlTemplates` class builds the full dashboard page by fetching each sensor and composing HTML via `HtmlGenerator`. Each dashboard cell (weather, calendar, presence, network stats) is a separate method.
 - **`Html/htmlGenerator.py`** — HTML tag builder utility. Generates tags with attributes; used by `htmlTemplates.py` instead of a template engine.
-- **`HomeAssistant/hassCommunicationsCoordinator.py`** — API client. `getRequest(id)` fetches entity state from Home Assistant using Bearer token auth.
-- **`utils/constants.py`** — All configuration: HA connection, sensor IDs, refresh interval. Created from `.customize` template.
+- **`HomeAssistant/hassCommunicationsCoordinator.py`** — API client. `getRequest(id)` fetches entity state from Home Assistant using Bearer token auth; `isReachable()` health-checks the HA instance to decide between the dashboard and offline page.
+- **`utils/logger.py`** — Shared `logger` instance imported across modules.
+- **`utils/constants.py`** — Loads all configuration (HA connection, sensor IDs, refresh interval) from environment variables. Loads `.env` only when `USE_DOTENV=1` (set by `make run`); `.env.example` is the template.
 - **`static/css/styles.css`** — eInk-optimized CSS. 180° rotation, large fonts, black-on-white, fixed 600x800px dimensions.
 - **`static/assets/weather_svg/`** — SVG icons for weather conditions.
 
 ### Design Constraints
+
+This project targets very old e-readers and legacy devices that do not support modern HTML or CSS. Every line of generated HTML and CSS must be kept as simple and backward-compatible as possible — avoid modern CSS features (flexbox, grid, CSS variables, `calc()`, etc.), HTML5 semantic elements, and anything that requires recent browser engine support.
 
 - Table-based HTML layout for compatibility with older e-reader browsers
 - No JavaScript — auto-refresh via `<meta http-equiv="refresh">`
@@ -81,6 +87,10 @@ Once a plan is approved and the user asks for implementation steps, create an im
 When implementing new methods always add docstrings in accordance with the directives in `context/styling/formatting.md`.
 
 **Asking Questions**: ALWAYS ask any clarifying questions you need and avoid assumptions unless asked otherwise.
+
+## Prefer Make Commands
+
+Always use `make` targets (e.g., `make test`, `make lint`, `make format`) instead of running the underlying commands directly when a matching Make target exists. Check the Makefile before running raw commands.
 
 ## Test-Driven Development
 

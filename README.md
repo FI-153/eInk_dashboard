@@ -9,12 +9,14 @@ I wrote more about it [here](https://medium.com/@federicoimberti/repurposing-an-
 
 - Docker
 - Docker Compose (V2)
-- Python 3.9+ (for local development)
+- Python 3.9+ and [uv](https://docs.astral.sh/uv/) (for local development)
 
 ## Setup
 
 1. Clone or download this repository
-2. Copy `utils/constants.py.customize` to `utils/constants.py` and populate it with your Home Assistant instance's IP, port, token, and the name of the sensors you want to use
+2. Provide your configuration (Home Assistant IP, port, token, and the sensor names you want to use) as environment variables. See `.env.example` for the full list of variables.
+   - **Docker / production:** set these as environment variables wherever you run `docker compose` (the compose file passes them through to the container).
+   - **Local development:** copy `.env.example` to `.env`, fill it in, and run `make run` — only `make run` loads `.env`.
 
 Sensor integrations used:
 - For the weather I used [Met.no](https://www.home-assistant.io/integrations/met)
@@ -32,7 +34,7 @@ make docker-down     # Stop the container
 ### Local Development
 ```bash
 make setup           # Install dependencies
-make run             # Start Flask dev server on 0.0.0.0:6123
+make run             # Start Flask dev server on 0.0.0.0:6123 (loads .env)
 ```
 
 ### Tests & Linting

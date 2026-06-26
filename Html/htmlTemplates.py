@@ -1,9 +1,25 @@
 import datetime
 
 from HomeAssistant.hassCommunicationsCoordinator import HassCommunicationsCoordinator
-from Html.htmlGenerator import HtmlGenerator
+from Html import htmlGenerator as h
 from utils.constants import *
-from utils.logger import logger
+
+WEATHER_CONDITION_MAP = {
+    "clear-night": "Clear Night",
+    "cloudy": "Cloudy",
+    "fog": "Foggy",
+    "hail": "Hailing",
+    "lightning": "Lightning",
+    "lightning-rainy": "Lightning with Rain",
+    "partlycloudy": "Partly Cloudy",
+    "pouring": "Pouring",
+    "rainy": "Rainy",
+    "snowy": "Snowy",
+    "snowy-rainy": "Snow with Rain",
+    "sunny": "Sunny",
+    "windy": "Windy",
+    "windy-variant": "Windy Variant",
+}
 
 
 class HtmlTemplates:
@@ -11,8 +27,24 @@ class HtmlTemplates:
         """
         Initializes the HtmlTemplates class.
         """
-        self._h = HtmlGenerator()
         self._hassComms = HassCommunicationsCoordinator()
+
+    def _build_head(self):
+        """
+        Builds the standard HTML <head> section shared by all pages.
+
+        Returns:
+          str: The HTML <head> element with stylesheet, viewport, meta-refresh, and title.
+        """
+        return h.head(
+            "",
+            [
+                h.link(["rel='stylesheet'", "type='text/css'", f"href='{CSS_STYLESHEET_PATH}'"]),
+                h.meta(["name='viewport'", "content='width=device-width, initial-scale=1.0'"]),
+                h.meta(["http-equiv='refresh'", f"content='{PAGE_REFRESH_INTERVAL_SECONDS}'"]),
+                h.title("", ["Dashboard"]),
+            ],
+        )
 
     def home(self):
         """
@@ -21,49 +53,54 @@ class HtmlTemplates:
         Returns:
           str: The HTML content for the home page.
         """
-        return self._h.html(
+        if not self._hassComms.isReachable():
+            return self.offline_page()
+
+        return self.dashboard()
+
+    def dashboard(self) -> str:
+        """
+        Generates an HTML page for the main dashboard.
+
+        Returns:
+          str: The HTML content for the dashboard page.
+        """
+
+        return h.html(
             "",
             [
-                self._h.head(
+                self._build_head(),
+                h.body(
                     "",
                     [
-                        self._h.link([f"rel='stylesheet' type='text/css' href={CSS_STYLESHEET_PATH}"]),
-                        self._h.meta(["name='viewport' content='width=device-width' initial-scale=1.0"]),
-                        self._h.meta([f"http-equiv='refresh' content={PAGE_REFRESH_INTERVAL_SECONDS}"]),
-                        self._h.title("", ["Dashboard"]),
-                    ],
-                ),
-                self._h.body(
-                    "",
-                    [
-                        self._h.table(
+                        h.table(
                             "border=2",
                             [
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td("", [self.get_time(time_type="currentTime")]),
-                                        self._h.td("", [self.get_people_at_home()]),
+                                        h.td("", [self.get_time()]),
+                                        h.td("", [self.get_people_at_home()]),
                                     ],
                                 ),
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td("id=big_table_cell", [self.weather_cell()]),
-                                        self._h.td("id=big_table_cell", [self.calendar_cell()]),
+                                        h.td("id=big_table_cell", [self.weather_cell()]),
+                                        h.td("id=big_table_cell", [self.calendar_cell()]),
                                     ],
                                 ),
-                                self._h.tr(
+                                h.tr(
                                     "",
                                     [
-                                        self._h.td(
+                                        h.td(
                                             "colspan=2",
                                             [
                                                 self.public_ip(),
-                                                self._h.div(
+                                                h.div(
                                                     "id=net_stats",
                                                     [
-                                                        self._h.p(
+                                                        h.p(
                                                             "",
                                                             [
                                                                 self.display_double_net_stat(
@@ -74,7 +111,7 @@ class HtmlTemplates:
                                                                 )
                                                             ],
                                                         ),
-                                                        self._h.p(
+                                                        h.p(
                                                             "",
                                                             [
                                                                 self.display_double_net_stat(
@@ -98,14 +135,40 @@ class HtmlTemplates:
             ],
         )
 
-    def title(self):
+    def offline_page(self) -> str:
         """
-        Generates an HTML <h1> element with the specified id and content.
+        Generates an HTML page indicating Home Assistant is offline.
+
+        Displays a centered "Home Assistant is Offline" message with the
+        current time below it. Includes meta-refresh so the page will
+        automatically recover when Home Assistant comes back online.
 
         Returns:
-          str: An HTML <h1> element with id "dash_title".
+          str: The HTML content for the offline page.
         """
-        return self._h.h1("id=dash_title", ["Lab Status"])
+        return h.html(
+            "",
+            [
+                self._build_head(),
+                h.body(
+                    "",
+                    [
+                        h.div(
+                            "id=offline_wrapper",
+                            [
+                                h.div(
+                                    "id=offline_message",
+                                    [
+                                        h.h1("", ["Home Assistant is Offline"]),
+                                        h.p("", [f"{datetime.datetime.now().strftime('%H:%M')}"]),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
 
     def weather_cell(self):
         """
@@ -131,29 +194,28 @@ class HtmlTemplates:
         if weather["result"] != "OK":
             [temperature, dew_point, condition] = ["Err", "Err", "Err"]
         else:
-            temperature = weather["attributes"]["temperature"]
-            dew_point = weather["attributes"]["dew_point"]
-            condition = weather["state"]
+            attributes = weather.get("attributes", {})
+            temperature = attributes.get("temperature", "Err")
+            dew_point = attributes.get("dew_point", "Err")
+            condition = weather.get("state", "Err")
 
-        return self._h.div(
+        return h.div(
             "id=weather_cell",
             [
-                self._h.p(
+                h.p(
                     "id=city_name",
                     [
-                        self._h.img(["id=city_icon", "src='../static/assets/weather_svg/location.svg'", "alt='city'"]),
+                        h.img(["id=city_icon", "src='../static/assets/weather_svg/location.svg'", "alt='city'"]),
                         WEATHER_CITY_NAME,
                     ],
                 ),
-                self._h.p("id=temperature", [f"{temperature}&deg"]),
-                self._h.img(
-                    ["id=weather_icon", f"src='../static/assets/weather_svg/{condition}.svg'", f"alt='{condition}'"]
-                ),
-                self._h.div(
+                h.p("id=temperature", [f"{temperature}&deg"]),
+                h.img(["id=weather_icon", f"src='../static/assets/weather_svg/{condition}.svg'", f"alt='{condition}'"]),
+                h.div(
                     "",
                     [
-                        self._h.p("", [f"{self.weather_condition_formatter(condition)}"]),
-                        self._h.p("", [f"Dew Point: {dew_point}&deg"]),
+                        h.p("", [f"{self.weather_condition_formatter(condition)}"]),
+                        h.p("", [f"Dew Point: {dew_point}&deg"]),
                     ],
                 ),
             ],
@@ -170,23 +232,7 @@ class HtmlTemplates:
           str: The formatted weather condition string. If the condition code is not recognized,
              returns "Format Err.".
         """
-        condition_map = {
-            "clear-night": "Clear Night",
-            "cloudy": "Cloudy",
-            "fog": "Foggy",
-            "hail": "Hailing",
-            "lightning": "Lightning",
-            "lightning-rainy": "Lightning with Rain",
-            "partlycloudy": "Partly Cloudy",
-            "pouring": "Pouring",
-            "rainy": "Rainy",
-            "snowy": "Snowy",
-            "snowy-rainy": "Snow with Rain",
-            "sunny": "Sunny",
-            "windy": "Windy",
-            "windy-variant": "Windy Variant",
-        }
-        return condition_map.get(condition, "Format Err.")
+        return WEATHER_CONDITION_MAP.get(condition, "Format Err.")
 
     def calendar_component(self):
         """
@@ -198,9 +244,9 @@ class HtmlTemplates:
         """
         [day, month, number] = datetime.datetime.now().strftime("%a %b %d").split()
 
-        return self._h.div(
+        return h.div(
             "id=date_field",
-            [self._h.p("id=day_month", [f"{day}   {month}"]), self._h.p("id=date_number", [f"{int(number)}"])],
+            [h.p("id=day_month", [f"{day}   {month}"]), h.p("id=date_number", [f"{int(number)}"])],
         )
 
     def eta_to_work_component(self):
@@ -218,7 +264,7 @@ class HtmlTemplates:
         else:
             eta = int(float(resp["state"]))
 
-        return self._h.div("id=travel_time", [self._h.p("", [f"{eta} Minutes To Work"])])
+        return h.div("id=travel_time", [h.p("", [f"{eta} Minutes To Work"])])
 
     def calendar_cell(self):
         """
@@ -232,16 +278,6 @@ class HtmlTemplates:
             {self.calendar_component()}
             {self.eta_to_work_component()}
           """
-
-    def reload_button(self):
-        """
-        Generates an HTML button element that reloads the page when clicked.
-
-        Returns:
-          str: An HTML button element.
-        """
-        logger.info("Page reloaded from button")
-        return self._h.button("onclick='location.reload()'", ["Reload"])
 
     def public_ip(self):
         """
@@ -258,7 +294,7 @@ class HtmlTemplates:
         else:
             ip = resp["state"]
 
-        return self._h.div("id=public_ip", [self._h.p("id=public_ip_addr", [f"Public IP: {ip}"])])
+        return h.div("id=public_ip", [h.p("id=public_ip_addr", [f"Public IP: {ip}"])])
 
     def get_net_stat(self, entity_id):
         """
@@ -273,38 +309,24 @@ class HtmlTemplates:
         resp = self._hassComms.getRequest(entity_id)
 
         if resp["result"] != "OK":
-            return -1.0
+            return "Err"
 
         return resp["state"]
 
-    def display_net_stat(self, entity_id, text, icon):
+    def _format_net_stat(self, value):
         """
-        Generates an HTML representation of a single network statistic.
-        This method retrieves the network statistic from a sensor and formats it.
+        Formats a network statistic value for display.
 
         Args:
-          entity_id (str): The sensor ID to retrieve the network statistic for.
-          text (str): The text description of the network statistic.
-          icon (str): The icon to display for the network statistic.
+          value: The raw network statistic value (a numeric string or "Err").
 
         Returns:
-          str: An HTML string representing the network statistic.
+          The value rounded to one decimal place, or "Err" if it is not numeric.
         """
-        stat = round(float(self.get_net_stat(entity_id)), 1)
-
-        return self._h.div(
-            "id='net_stats_elem'",
-            [
-                self._h.p(
-                    "",
-                    [
-                        self._h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
-                        f"{stat}",
-                        " MB/S",
-                    ],
-                )
-            ],
-        )
+        try:
+            return round(float(value), 1)
+        except (ValueError, TypeError):
+            return "Err"
 
     def display_double_net_stat(self, id_lan, id_wan, text, icon):
         """
@@ -321,16 +343,16 @@ class HtmlTemplates:
           str: An HTML string representing the LAN and WAN network statistics.
         """
 
-        stat_lan = round(float(self.get_net_stat(id_lan)), 1)
-        stat_wan = round(float(self.get_net_stat(id_wan)), 1)
+        stat_lan = self._format_net_stat(self.get_net_stat(id_lan))
+        stat_wan = self._format_net_stat(self.get_net_stat(id_wan))
 
-        return self._h.div(
+        return h.div(
             "id='net_stats_elem'",
             [
-                self._h.p(
+                h.p(
                     "",
                     [
-                        self._h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
+                        h.img([f"id='net_icon' src='../static/assets/arrows/{icon}.svg' alt='{text}'"]),
                         f"{stat_lan}",
                         " / ",
                         f"{stat_wan}",
@@ -340,48 +362,29 @@ class HtmlTemplates:
             ],
         )
 
-    def get_time(self, time_type="lastUpdated"):
+    def get_time(self):
         """
-        Generates an HTML <h1> element displaying the specified time.
+        Generates an HTML <h1> element displaying the current time (HH:MM).
 
-        Args:
-          time_type (str): The type of time to display. Options are "lastUpdated" for the last update time
-                and "currentTime" for the current time. Defaults to "lastUpdated". In order to have a
-                correctly updated time you must set PAGE_REFRESH_INTERVAL_SECONDS to 60 seconds.
-                Otherwise if you can run scripts just call this method once every minute.
-
-        Returns
-          str: An HTML <h1> element with the specified time or an error message if the type is invalid.
+        Returns:
+          str: An HTML <h1> element with the current time.
         """
-        if time_type == "lastUpdated":
-            return self._h.h1("id='h1_time'", [f"Last Updated @{datetime.datetime.now().strftime('%H:%M')}"])
-        elif time_type == "currentTime":
-            return self._h.h1("id='h1_time'", [f"{datetime.datetime.now().strftime('%H:%M')}"])
-        else:
-            return f"Invalid time option: {time_type}"
+        return h.h1("id='h1_time'", [f"{datetime.datetime.now().strftime('%H:%M')}"])
 
     def get_people_at_home(self):
         """
         Generates an HTML header element indicating which people are currently at home.
 
-        This method checks the presence of specific individuals using their tracker sensor IDs
-        and returns an HTML <h1> element containing the initials of those who are at home.
+        Iterates over PERSON_TRACKERS, a list of (entity_id, label) pairs, and renders the
+        label of each person whose tracker reports them as home. Entries whose ID is unset
+        or unreachable are simply skipped, so the section adapts to any number of configured
+        people without crashing on partial configuration.
 
         Returns:
-          str: An HTML <h1> element with the initials of people at home.
-            - 'C' for Claudio
-            - 'F' for Federico
-            - 'L' for Loretta
+          str: An HTML <h1> element with the labels of people at home.
         """
-        return self._h.h1(
-            "",
-            [
-                f"""@home:\
- {"C" if self.is_person_home(PERSON_1_TRACKER_SENSOR_ID) else ""}\
- {"F" if self.is_person_home(PERSON_2_TRACKER_SENSOR_ID) else ""}\
- {"L" if self.is_person_home(PERSON_3_TRACKER_SENSOR_ID) else ""}"""
-            ],
-        )
+        initials = "".join(f" {label}" for entity_id, label in PERSON_TRACKERS if self.is_person_home(entity_id))
+        return h.h1("", [f"@home:{initials}"])
 
     def is_person_home(self, person_id):
         """
@@ -391,11 +394,11 @@ class HtmlTemplates:
           person_id (str): The ID of the person to check.
 
         Returns:
-          str: True if the person is home, otherwise False
+          bool: True if the person is home, otherwise False.
         """
         resp = self._hassComms.getRequest(person_id)
 
         if resp["result"] != "OK":
             return False
 
-        return True if resp["state"] == "home" else False
+        return resp["state"] == "home"

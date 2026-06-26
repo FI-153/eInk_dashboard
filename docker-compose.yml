@@ -7,6 +7,20 @@ services:
     container_name: kobo_dash
     environment:
       - TZ=Europe/Rome
+      - HASS_IP
+      - HASS_PORT
+      - HASS_TOKEN
+      - PAGE_REFRESH_INTERVAL_SECONDS
+      - CSS_STYLESHEET_PATH
+      - WEATHER_SENSOR_ID
+      - WEATHER_CITY_NAME
+      - ETA_TO_WORK_SENSOR_ID
+      - PUBLIC_IP_SENSOR_ID
+      - DOWNLOAD_SPD_SENSOR_ID
+      - UPLOAD_SPD_SENSOR_ID
+      - LAN_DOWNLOAD_SPD_SENSOR_ID
+      - LAN_UPLOAD_SPD_SENSOR_ID
+      - PERSON_TRACKERS
     volumes:
       - ./Html:/app/Html
       - ./HomeAssistant:/app/HomeAssistant

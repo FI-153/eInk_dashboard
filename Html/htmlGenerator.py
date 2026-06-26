@@ -1,69 +1,218 @@
 from typing import List, Optional
 
 
-class HtmlGenerator:
-    def __init__(self):
-        pass
+def open_close_tag(tag: str, attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a paired tag wrapping its child content.
 
-    def open_close_tag(self, tag: str, attrs: str, args: Optional[List[str]] = None):
-        if args is None:
-            args = []
-        return f"\n<{tag} {attrs}>\n{''.join(args)}\n</{tag}>\n"
+    Args:
+      tag (str): The tag name (e.g. "div").
+      attrs (str): The attribute string placed inside the opening tag.
+      args (Optional[List[str]]): Child content joined verbatim. Defaults to none.
 
-    def open_tag(self, tag: str, attrs: Optional[List[str]] = None):
-        if attrs is None:
-            attrs = []
-        return f"\n<{tag} {' '.join(attrs)}>\n"
+    Returns:
+      str: The opening tag, child content, and closing tag.
+    """
+    if args is None:
+        args = []
+    return f"\n<{tag} {attrs}>\n{''.join(args)}\n</{tag}>\n"
 
-    def html(self, attrs: str, args: Optional[List[str]] = None):
-        if args is None:
-            args = []
-        return f"""
+
+def open_tag(tag: str, attrs: Optional[List[str]] = None):
+    """
+    Builds a single (void) tag with no closing tag.
+
+    Args:
+      tag (str): The tag name (e.g. "img").
+      attrs (Optional[List[str]]): Attributes joined with spaces. Defaults to none.
+
+    Returns:
+      str: The opening tag.
+    """
+    if attrs is None:
+        attrs = []
+    return f"\n<{tag} {' '.join(attrs)}>\n"
+
+
+def html(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a full HTML document with a doctype and <html> root.
+
+    Args:
+      attrs (str): The attribute string for the <html> tag.
+      args (Optional[List[str]]): Document content. Defaults to none.
+
+    Returns:
+      str: The complete HTML document.
+    """
+    if args is None:
+        args = []
+    return f"""
     <!DOCTYPE html>
-    {self.open_close_tag("html", attrs, args)}
+    {open_close_tag("html", attrs, args)}
     """
 
-    def head(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("head", attrs, args)
 
-    def body(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("body", attrs, args)
+def head(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <head> element.
 
-    def table(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("table", attrs, args)
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Head content. Defaults to none.
 
-    def p(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("p", attrs, args)
+    Returns:
+      str: The <head> element.
+    """
+    return open_close_tag("head", attrs, args)
 
-    def div(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("div", attrs, args)
 
-    def img(self, args: Optional[List[str]] = None):
-        return self.open_tag("img", args)
+def body(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <body> element.
 
-    def link(self, args: Optional[List[str]] = None):
-        return self.open_tag("link", args)
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Body content. Defaults to none.
 
-    def meta(self, args: Optional[List[str]] = None):
-        return self.open_tag("meta", args)
+    Returns:
+      str: The <body> element.
+    """
+    return open_close_tag("body", attrs, args)
 
-    def title(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("title", attrs, args)
 
-    def tr(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("tr", attrs, args)
+def table(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <table> element.
 
-    def td(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("td", attrs, args)
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Table content. Defaults to none.
 
-    def br(self):
-        return self.open_tag("br")
+    Returns:
+      str: The <table> element.
+    """
+    return open_close_tag("table", attrs, args)
 
-    def button(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("button", attrs, args)
 
-    def h1(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("h1", attrs, args)
+def p(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <p> element.
 
-    def h2(self, attrs: str, args: Optional[List[str]] = None):
-        return self.open_close_tag("h2", attrs, args)
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Paragraph content. Defaults to none.
+
+    Returns:
+      str: The <p> element.
+    """
+    return open_close_tag("p", attrs, args)
+
+
+def div(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <div> element.
+
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Div content. Defaults to none.
+
+    Returns:
+      str: The <div> element.
+    """
+    return open_close_tag("div", attrs, args)
+
+
+def img(args: Optional[List[str]] = None):
+    """
+    Builds an <img> element.
+
+    Args:
+      args (Optional[List[str]]): Attributes joined with spaces. Defaults to none.
+
+    Returns:
+      str: The <img> element.
+    """
+    return open_tag("img", args)
+
+
+def link(args: Optional[List[str]] = None):
+    """
+    Builds a <link> element.
+
+    Args:
+      args (Optional[List[str]]): Attributes joined with spaces. Defaults to none.
+
+    Returns:
+      str: The <link> element.
+    """
+    return open_tag("link", args)
+
+
+def meta(args: Optional[List[str]] = None):
+    """
+    Builds a <meta> element.
+
+    Args:
+      args (Optional[List[str]]): Attributes joined with spaces. Defaults to none.
+
+    Returns:
+      str: The <meta> element.
+    """
+    return open_tag("meta", args)
+
+
+def title(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <title> element.
+
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Title text. Defaults to none.
+
+    Returns:
+      str: The <title> element.
+    """
+    return open_close_tag("title", attrs, args)
+
+
+def tr(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <tr> (table row) element.
+
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Row content. Defaults to none.
+
+    Returns:
+      str: The <tr> element.
+    """
+    return open_close_tag("tr", attrs, args)
+
+
+def td(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds a <td> (table cell) element.
+
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Cell content. Defaults to none.
+
+    Returns:
+      str: The <td> element.
+    """
+    return open_close_tag("td", attrs, args)
+
+
+def h1(attrs: str, args: Optional[List[str]] = None):
+    """
+    Builds an <h1> heading element.
+
+    Args:
+      attrs (str): The attribute string for the tag.
+      args (Optional[List[str]]): Heading content. Defaults to none.
+
+    Returns:
+      str: The <h1> element.
+    """
+    return open_close_tag("h1", attrs, args)
